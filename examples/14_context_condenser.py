@@ -21,6 +21,7 @@ from openhands.sdk import (
     get_logger,
 )
 from openhands.sdk.context.condenser import LLMSummarizingCondenser
+from openhands.sdk.conversation.types import ConversationID
 from openhands.sdk.io.local import LocalFileStore
 from openhands.tools import BashTool, FileEditorTool, TaskTrackerTool
 
@@ -28,12 +29,21 @@ from openhands.tools import BashTool, FileEditorTool, TaskTrackerTool
 logger = get_logger(__name__)
 
 # Configure LLM
-api_key = os.getenv("LITELLM_API_KEY")
-assert api_key is not None, "LITELLM_API_KEY environment variable is not set."
+# api_key = os.getenv("LITELLM_API_KEY")
+# assert api_key is not None, "LITELLM_API_KEY environment variable is not set."
+# llm = LLM(
+#     model="litellm_proxy/anthropic/claude-sonnet-4-20250514",
+#     base_url="https://llm-proxy.eval.all-hands.dev",
+#     api_key=SecretStr(api_key),
+# )
+
 llm = LLM(
-    model="litellm_proxy/anthropic/claude-sonnet-4-20250514",
-    base_url="https://llm-proxy.eval.all-hands.dev",
-    api_key=SecretStr(api_key),
+    # model="litellm_proxy/anthropic/claude-sonnet-4-20250514",
+    model="ollama/devstral-64k",
+    # base_url="https://llm-proxy.eval.all-hands.dev",
+    base_url="http://localhost:11434",
+    # api_key=SecretStr(api_key),
+    api_key=SecretStr(""),
 )
 
 # Tools
@@ -64,94 +74,98 @@ def conversation_callback(event: Event):
 
 file_store = LocalFileStore("./.conversations")
 
-conversation = Conversation(
-    agent=agent, callbacks=[conversation_callback], persist_filestore=file_store
-)
+# conversation = Conversation(
+#     agent=agent, callbacks=[conversation_callback], persist_filestore=file_store
+# )
 
-# Send multiple messages to demonstrate condensation
-print("Sending multiple messages to demonstrate LLM Summarizing Condenser...")
+# # Send multiple messages to demonstrate condensation
+# print("Sending multiple messages to demonstrate LLM Summarizing Condenser...")
 
-conversation.send_message(
-    message=Message(
-        role="user",
-        content=[
-            TextContent(
-                text=(
-                    "Hello! Can you create a Python file named math_utils.py with "
-                    "functions for basic arithmetic operations (add, subtract, "
-                    "multiply, divide)?"
-                )
-            )
-        ],
-    )
-)
-conversation.run()
+# conversation.send_message(
+#     message=Message(
+#         role="user",
+#         content=[
+#             TextContent(
+#                 text=(
+#                     "Hello! Can you create a Python file named math_utils.py with "
+#                     "functions for basic arithmetic operations (add, subtract, "
+#                     "multiply, divide)?"
+#                 )
+#             )
+#         ],
+#     )
+# )
+# conversation.run()
 
-conversation.send_message(
-    message=Message(
-        role="user",
-        content=[
-            TextContent(
-                text="Great! Now add a function to calculate the factorial of a number."
-            )
-        ],
-    )
-)
-conversation.run()
+# conversation.send_message(
+#     message=Message(
+#         role="user",
+#         content=[
+#             TextContent(
+#                 text="Great! Now add a function to calculate
+#                 the factorial of a number."
+#             )
+#         ],
+#     )
+# )
+# conversation.run()
 
-conversation.send_message(
-    message=Message(
-        role="user",
-        content=[TextContent(text="Add a function to check if a number is prime.")],
-    )
-)
-conversation.run()
+# conversation.send_message(
+#     message=Message(
+#         role="user",
+#         content=[TextContent(text="Add a function to check if a number is prime.")],
+#     )
+# )
+# conversation.run()
 
-conversation.send_message(
-    message=Message(
-        role="user",
-        content=[
-            TextContent(
-                text=(
-                    "Add a function to calculate the greatest common divisor (GCD) "
-                    "of two numbers."
-                )
-            )
-        ],
-    )
-)
-conversation.run()
+# conversation.send_message(
+#     message=Message(
+#         role="user",
+#         content=[
+#             TextContent(
+#                 text=(
+#                     "Add a function to calculate the greatest common divisor (GCD) "
+#                     "of two numbers."
+#                 )
+#             )
+#         ],
+#     )
+# )
+# conversation.run()
 
-conversation.send_message(
-    message=Message(
-        role="user",
-        content=[
-            TextContent(
-                text=(
-                    "Now create a test file to verify all these functions work "
-                    "correctly."
-                )
-            )
-        ],
-    )
-)
-conversation.run()
+# conversation.send_message(
+#     message=Message(
+#         role="user",
+#         content=[
+#             TextContent(
+#                 text=(
+#                     "Now create a test file to verify all these functions work "
+#                     "correctly."
+#                 )
+#             )
+#         ],
+#     )
+# )
+# conversation.run()
 
 
-print("=" * 100)
-print("Conversation finished. Got the following LLM messages:")
-for i, message in enumerate(llm_messages):
-    print(f"Message {i}: {str(message)[:200]}")
+# print("=" * 100)
+# print("Conversation finished. Got the following LLM messages:")
+# for i, message in enumerate(llm_messages):
+#     print(f"Message {i}: {str(message)[:200]}")
 
-# Conversation persistence
-print("Serializing conversation...")
+# # Conversation persistence
+# print("Serializing conversation...")
 
-del conversation
+# del conversation
 
 # Deserialize the conversation
-print("Deserializing conversation...")
+# print("Deserializing conversation...")
 conversation = Conversation(
-    agent=agent, callbacks=[conversation_callback], persist_filestore=file_store
+    conversation_id=ConversationID("693c6317-9ada-478d-8cdf-63db8de69056"),
+    agent=agent,
+    callbacks=[conversation_callback],
+    persist_filestore=file_store,
 )
 
 print("Sending message to deserialized conversation...")
